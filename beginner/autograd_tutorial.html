@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>A Gentle Introduction to Autograd &mdash; PyTorch Tutorials 1.7.0 documentation</title>
+  <title>A Gentle Introduction to torch.autograd &mdash; PyTorch Tutorials 1.7.0 documentation</title>
   
 
   
@@ -182,11 +182,11 @@
             
               <!-- Local TOC -->
               <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">A Gentle Introduction to Autograd</a><ul>
+<li><a class="reference internal" href="#">A Gentle Introduction to <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a><ul>
 <li><a class="reference internal" href="#background">Background</a></li>
 <li><a class="reference internal" href="#usage-in-pytorch">Usage in PyTorch</a></li>
 <li><a class="reference internal" href="#differentiation-in-autograd">Differentiation in Autograd</a><ul>
-<li><a class="reference internal" href="#optional-reading-vector-calculus-in-autograd">Optional Reading - Vector Calculus in Autograd</a></li>
+<li><a class="reference internal" href="#optional-reading-vector-calculus-using-autograd">Optional Reading - Vector Calculus using <code class="docutils literal notranslate"><span class="pre">autograd</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#computational-graph">Computational Graph</a><ul>
@@ -236,7 +236,7 @@
       </li>
 
         
-      <li>A Gentle Introduction to Autograd</li>
+      <li>A Gentle Introduction to <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -294,11 +294,11 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-beginner-autograd-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="a-gentle-introduction-to-autograd">
-<span id="sphx-glr-beginner-autograd-tutorial-py"></span><h1>A Gentle Introduction to Autograd<a class="headerlink" href="#a-gentle-introduction-to-autograd" title="Permalink to this headline">¶</a></h1>
-<p>Autograd is PyTorch’s automatic differentiation engine that powers
+<div class="sphx-glr-example-title section" id="a-gentle-introduction-to-torch-autograd">
+<span id="sphx-glr-beginner-autograd-tutorial-py"></span><h1>A Gentle Introduction to <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code><a class="headerlink" href="#a-gentle-introduction-to-torch-autograd" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> is PyTorch’s automatic differentiation engine that powers
 neural network training. In this section, you will get a conceptual
-understanding of how autograd works under the hood.</p>
+understanding of how autograd helps a neural network train.</p>
 <div class="section" id="background">
 <h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
 <p>Neural networks (NNs) are a collection of nested functions that are
@@ -316,67 +316,82 @@ respect to the parameters of the functions (<em>gradients</em>), and optimizing
 the parameters using <strong>gradient descent</strong>. For a more detailed walkthrough
 of backprop, check out this <a class="reference external" href="https://www.youtube.com/watch?v=tIeHLnjs5U8">video from
 3Blue1Brown</a>.</p>
-<p>Most deep learning frameworks use automatic differentiation for
-backprop; in PyTorch, it is handled by Autograd.</p>
 </div>
 <div class="section" id="usage-in-pytorch">
 <h2>Usage in PyTorch<a class="headerlink" href="#usage-in-pytorch" title="Permalink to this headline">¶</a></h2>
-<p>Backward propagation can be kicked off by calling <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> on the error tensor.
-This collects the gradients for each parameter in the model.</p>
+<p>Let’s take a look at a single training step.
+For this example, we load a pretrained resnet18 model from <code class="docutils literal notranslate"><span class="pre">torchvision</span></code>.
+We create a random data tensor to represent a single image with 3 channels, and height &amp; width of 64,
+and its corresponding <code class="docutils literal notranslate"><span class="pre">label</span></code> initialized to some random values.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span><span class="o">,</span> <span class="nn">torchvision</span>
-
 <span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-<span class="n">prediction</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c1"># forward pass</span>
-<span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">prediction</span> <span class="o">-</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span> <span class="c1"># backward pass</span>
-
-<span class="n">optim</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-<span class="n">optim</span><span class="o">.</span><span class="n">step</span><span class="p">()</span> <span class="c1">#gradient descent</span>
 </pre></div>
 </div>
-<p>At this point, you have everything you need to build your neural network.
+<p>Next, we run the input data through the model through each of its layers to make a prediction.
+This is the <strong>forward pass</strong>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prediction</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c1"># forward pass</span>
+</pre></div>
+</div>
+<p>We use the model’s prediction and the corresponding label to calculate the error (<code class="docutils literal notranslate"><span class="pre">loss</span></code>).
+The next step is to backpropagate this error through the network.
+Backward propagation is kicked off when we call <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> on the error tensor.
+Autograd then calculates and stores the gradients for each model parameter in the parameter’s <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">prediction</span> <span class="o">-</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span> <span class="c1"># backward pass</span>
+</pre></div>
+</div>
+<p>Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and momentum of 0.9.
+We register all the parameters of the model in the optimizer.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optim</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we call <code class="docutils literal notranslate"><span class="pre">.step()</span></code> to initiate gradient descent. The optimizer adjusts each parameter by its gradient stored in <code class="docutils literal notranslate"><span class="pre">.grad</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optim</span><span class="o">.</span><span class="n">step</span><span class="p">()</span> <span class="c1">#gradient descent</span>
+</pre></div>
+</div>
+<p>At this point, you have everything you need to train your neural network.
 The below sections detail the workings of autograd - feel free to skip them.</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="differentiation-in-autograd">
 <h2>Differentiation in Autograd<a class="headerlink" href="#differentiation-in-autograd" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># The ``requires_grad`` flag lets autograd know</span>
-<span class="c1"># if we need gradients w.r.t. these tensors. If it is ``True``, autograd</span>
-<span class="c1"># tracks all operations on them.</span>
-
-
-<span class="kn">import</span> <span class="nn">torch</span>
+<p>Let’s take a look at how <code class="docutils literal notranslate"><span class="pre">autograd</span></code> collects gradients. We create two tensors <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> with
+<code class="docutils literal notranslate"><span class="pre">requires_grad=True</span></code>. This signals to <code class="docutils literal notranslate"><span class="pre">autograd</span></code> that every operation on them should be tracked.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">6.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">Q</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mi">3</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-12.,  65.], grad_fn=&lt;SubBackward0&gt;)
+<p>We create another tensor <code class="docutils literal notranslate"><span class="pre">Q</span></code> from <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+<div class="math notranslate nohighlight">
+\[Q = 3a^3 - b^2\]</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Q</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mi">3</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> can be viewed as parameters of an NN, with <code class="docutils literal notranslate"><span class="pre">Q</span></code>
-analogous to the error. In training we want gradients of the error
+<p>Let’s assume <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> to be parameters of an NN, and <code class="docutils literal notranslate"><span class="pre">Q</span></code>
+to be the error. In NN training, we want gradients of the error
 w.r.t. parameters, i.e.</p>
 <div class="math notranslate nohighlight">
 \[\frac{\partial Q}{\partial a} = 9a^2\]</div>
 <div class="math notranslate nohighlight">
 \[\frac{\partial Q}{\partial b} = -2b\]</div>
-<p>Since <code class="docutils literal notranslate"><span class="pre">Q</span></code> is a vector, we pass a <code class="docutils literal notranslate"><span class="pre">gradient</span></code> argument in
-<code class="docutils literal notranslate"><span class="pre">.backward()</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">gradient</span></code> is a tensor of the same shape. Here it represents the
+<p>When we call <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> on <code class="docutils literal notranslate"><span class="pre">Q</span></code>, autograd calculates these gradients
+and stores them in the respective tensors’ <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute.</p>
+<p>We need to explicitly pass a <code class="docutils literal notranslate"><span class="pre">gradient</span></code> argument in <code class="docutils literal notranslate"><span class="pre">Q.backward()</span></code> because it is a vector.
+<code class="docutils literal notranslate"><span class="pre">gradient</span></code> is a tensor of the same shape as <code class="docutils literal notranslate"><span class="pre">Q</span></code>, and it represents the
 gradient of Q w.r.t. itself, i.e.</p>
 <div class="math notranslate nohighlight">
 \[\frac{dQ}{dQ} = 1\]</div>
+<p>Equivalently, we can also aggregate Q into a scalar and call backward implicitly, like <code class="docutils literal notranslate"><span class="pre">Q.sum().backward()</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">external_grad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
 <span class="n">Q</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="n">external_grad</span><span class="p">)</span>
-
-<span class="c1"># check if autograd&#39;s gradients are correct</span>
+</pre></div>
+</div>
+<p>Gradients are now deposited in <code class="docutils literal notranslate"><span class="pre">a.grad</span></code> and <code class="docutils literal notranslate"><span class="pre">b.grad</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># check if collected gradients are correct</span>
 <span class="nb">print</span><span class="p">(</span><span class="mi">9</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
 </pre></div>
@@ -386,8 +401,8 @@ gradient of Q w.r.t. itself, i.e.</p>
 tensor([True, True])
 </pre></div>
 </div>
-<div class="section" id="optional-reading-vector-calculus-in-autograd">
-<h3>Optional Reading - Vector Calculus in Autograd<a class="headerlink" href="#optional-reading-vector-calculus-in-autograd" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="optional-reading-vector-calculus-using-autograd">
+<h3>Optional Reading - Vector Calculus using <code class="docutils literal notranslate"><span class="pre">autograd</span></code><a class="headerlink" href="#optional-reading-vector-calculus-using-autograd" title="Permalink to this headline">¶</a></h3>
 <p>Mathematically, if you have a vector valued function
 <span class="math notranslate nohighlight">\(\vec{y}=f(\vec{x})\)</span>, then the gradient of <span class="math notranslate nohighlight">\(\vec{y}\)</span> with
 respect to <span class="math notranslate nohighlight">\(\vec{x}\)</span> is a Jacobian matrix <span class="math notranslate nohighlight">\(J\)</span>:</p>
@@ -444,30 +459,29 @@ graph (DAG) consisting of
 objects. In this DAG, leaves are the input tensors, roots are the output
 tensors. By tracing this graph from roots to leaves, you can
 automatically compute the gradients using the chain rule.</p>
-<p>In a forward pass, autograd does two things simultaneously: * run the
-requested operation to compute a resulting tensor, and * maintain the
-operation’s <em>gradient function</em> in the DAG. This is stored in the
-resulting tensor’s .<code class="docutils literal notranslate"><span class="pre">grad_fn</span></code> attribute.</p>
+<p>In a forward pass, autograd does two things simultaneously:
+- run the requested operation to compute a resulting tensor, and
+- maintain the operation’s <em>gradient function</em> in the DAG.
+This is stored in the resulting tensor’s .<code class="docutils literal notranslate"><span class="pre">grad_fn</span></code> attribute.</p>
 <p>The backward pass kicks off when <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> is called on the DAG
-root. Autograd then * computes the gradients from each <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code>, *
+root. <code class="docutils literal notranslate"><span class="pre">autograd</span></code> then * computes the gradients from each <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code>, *
 accumulates them in the respective tensor’s <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute, and *
 using the chain rule, propagates all the way to the leaf tensors.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>Autograd DAGs are dynamic in PyTorch</strong>
+<p>** DAGs are dynamic in PyTorch**
 An important thing to note is that the graph is recreated from scratch; after each
 <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> call, autograd starts populating a new graph. This is
 exactly what allows you to use control flow statements in your model;
 you can change the shape, size and operations at every iteration if
-needed. Autograd does not need you to encode all possible paths
-beforehand.</p>
+needed.</p>
 </div>
 <div class="section" id="exclusion-from-the-dag">
 <h3>Exclusion from the DAG<a class="headerlink" href="#exclusion-from-the-dag" title="Permalink to this headline">¶</a></h3>
-<p>Autograd tracks operations on all tensors which have their
+<p><code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> tracks operations on all tensors which have their
 <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. For tensors that don’t require
 gradients, setting this attribute to <code class="docutils literal notranslate"><span class="pre">False</span></code> excludes it from the
-gradient computation DAG and increases efficiency.</p>
+gradient computation DAG.</p>
 <p>The output tensor of an operation will require gradients even if only a
 single input tensor has <code class="docutils literal notranslate"><span class="pre">requires_grad=True</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
@@ -476,10 +490,10 @@ single input tensor has <code class="docutils literal notranslate"><span class="
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Does `a` require gradients?&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="o">==</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">z</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Does `b` require gradients?&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">requires_grad</span><span class="o">==</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -489,24 +503,34 @@ Does `b` require gradients?
 True
 </pre></div>
 </div>
-<p>This is especially useful when you want to freeze part of your model
-(for instance, when you’re fine-tuning a pretrained model), or you know
-in advance that you’re not going to use gradients w.r.t. some
-parameters.</p>
+<p>In a NN, parameters that don’t compute gradients are usually called <strong>frozen parameters</strong>.
+It is useful to “freeze” part of your model if you know in advance that you won’t need the gradients of those parameters
+(this offers some performance benefits by reducing autograd computations).</p>
+<p>When finetuning a pretrained network, we leave most of the model alone (by freezing it) and only update the “classifier” layers to make predictions on new labels.
+Let’s walk through a small example to demonstrate this</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">optim</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+<span class="c1"># Freeze all the parameters in the network</span>
 <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="c1"># Replace the last fully-connected layer</span>
-<span class="c1"># Parameters of nn.Module instances have requires_grad=True by default</span>
+
+<span class="c1"># We need to update the parameters of our classifier to perform on our new task.</span>
+<span class="c1"># In resnet, the classifier is the linear layer in model.fc</span>
+<span class="c1"># We can simply replace it with a new linear layer (which is &quot;unfrozen&quot; by default)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Now, all parameters in the model, except the parameters of model.fc do not compute gradients.</span>
+<span class="c1"># The only parameters that compute gradients are the weights and bias of model.fc.</span>
 
 <span class="c1"># Optimize only the classifier</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Notice although we register all the parameters in the optimizer,
+the only parameters that are computing gradients (and updated in gradient descent)
+are the weights and bias of the classifier.</p>
 <p>The same functionality is available as a context manager in
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html">torch.no_grad()</a></p>
 </div>
@@ -518,7 +542,7 @@ parameters.</p>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/notes/autograd.html">In-place operations &amp; Multithreaded Autograd</a></p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC">Example implementation of reverse-mode autodiff</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.642 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.787 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-autograd-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e9cf8178ed40282023c2f454e34e40dc/autograd_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial.py</span></code></a></p>
@@ -572,11 +596,11 @@ parameters.</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">A Gentle Introduction to Autograd</a><ul>
+<li><a class="reference internal" href="#">A Gentle Introduction to <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a><ul>
 <li><a class="reference internal" href="#background">Background</a></li>
 <li><a class="reference internal" href="#usage-in-pytorch">Usage in PyTorch</a></li>
 <li><a class="reference internal" href="#differentiation-in-autograd">Differentiation in Autograd</a><ul>
-<li><a class="reference internal" href="#optional-reading-vector-calculus-in-autograd">Optional Reading - Vector Calculus in Autograd</a></li>
+<li><a class="reference internal" href="#optional-reading-vector-calculus-using-autograd">Optional Reading - Vector Calculus using <code class="docutils literal notranslate"><span class="pre">autograd</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#computational-graph">Computational Graph</a><ul>
