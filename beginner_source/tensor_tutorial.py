@@ -43,7 +43,7 @@ x_np = torch.from_numpy(np_array)
 x_ones = torch.ones_like(x_data) # 2 x 2 matrix of ones
 
 x_rand = torch.rand_like(x_data, dtype=torch.float)
-print(new_rand_tensor)
+print(x_rand)
 
 
 ######################################################################

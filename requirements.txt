@@ -1,4 +1,4 @@
-# Refer to ./jenkins/build.sh for tutorial build instructions 
+# Refer to ./jenkins/build.sh for tutorial build instructions
 
 sphinx
 sphinx-gallery==0.3.1
@@ -26,3 +26,4 @@ scikit-image
 # this is a workaround to the issue.
 pillow==4.1.1
 wget
+torchviz

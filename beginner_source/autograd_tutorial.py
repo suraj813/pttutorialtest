@@ -281,9 +281,7 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 # `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #
 # In finetuning, we freeze most of the model and typically only modify the "classifier" layers to make predictions on new labels.
-# Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
-
-from torch import nn, optim
+# Let's walk through a small example to demonstrate this. We load a pretrained resnet18 model and freeze all the parameters.
 
 model = torchvision.models.resnet18(pretrained=True)
 
@@ -297,14 +295,14 @@ for param in model.parameters():
 # We can simply replace it with a new linear layer (unfrozen by default)
 # that acts as our classifier.
 
-model.fc = nn.Linear(512, 10)
+model.fc = torch.nn.Linear(512, 10)
 
 ######################################################################
-# Now all parameters in the model, except the parameters of ``model.fc``, are frozen.
+# Now all parameters in the model, except the parameters of ``model.fc``, are excluded from the DAG.
 # The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
 # Optimize only the classifier
-optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
+optimizer = torch.optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
 
 ##########################################################################
 # Notice although we register all the parameters in the optimizer,
