@@ -134,7 +134,7 @@ print(t1)
 # This computes the element-wise product
 print(f"tensor.mul(tensor) \n {tensor.mul(tensor)} \n")
 # Alternative syntax:
-print(f"tensor * tensor \n {tensor * tensor})
+print(f"tensor * tensor \n {tensor * tensor}")
 
 ######################################################################
 #
