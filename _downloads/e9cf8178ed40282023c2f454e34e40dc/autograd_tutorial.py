@@ -220,25 +220,23 @@ print(-2*b == b.grad)
 # automatically compute the gradients using the chain rule.
 #
 # In a forward pass, autograd does two things simultaneously:
-# - run the requested operation to compute a resulting tensor, and
-# - maintain the operation’s *gradient function* in the DAG.
-# This is stored in the resulting tensor’s ``.grad_fn`` attribute.
+#    - run the requested operation to compute a resulting tensor, and
+#    - maintain the operation’s *gradient function* in the DAG.
 #
+
+######################################################################
 # The backward pass kicks off when ``.backward()`` is called on the DAG
-# root. ``autograd`` then
-# - computes the gradients from each ``.grad_fn``,
-# - accumulates them in the respective tensor’s ``.grad`` attribute, and
-# - using the chain rule, propagates all the way to the leaf tensors.
+# root. ``autograd`` then:
+#    - computes the gradients from each ``.grad_fn``,
+#    - accumulates them in the respective tensor’s ``.grad`` attribute, and
+#    - using the chain rule, propagates all the way to the leaf tensors.
 #
-# The DAG in the above example can be visualized using ``torchviz``. In the graph,
+# Below is a visual representation of the DAG in our example. In the graph,
 # the arrows are in the direction of the forward pass. The nodes represent the backward functions
 # of each operation in the forward pass. The leaf nodes in blue represent our leaf tensors ``a`` and ``b``.
 #
-import torchviz
-torchviz.make_dot(Q)
-
-
-#######################################################################
+# .. figure:: /_static/img/dag_autograd.png
+#
 # .. note::
 #   **DAGs are dynamic in PyTorch**
 #   An important thing to note is that the graph is recreated from scratch; after each
@@ -281,7 +279,9 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 # `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #
 # In finetuning, we freeze most of the model and typically only modify the "classifier" layers to make predictions on new labels.
-# Let's walk through a small example to demonstrate this. We load a pretrained resnet18 model and freeze all the parameters.
+# Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
+
+from torch import nn, optim
 
 model = torchvision.models.resnet18(pretrained=True)
 
@@ -295,14 +295,14 @@ for param in model.parameters():
 # We can simply replace it with a new linear layer (unfrozen by default)
 # that acts as our classifier.
 
-model.fc = torch.nn.Linear(512, 10)
+model.fc = nn.Linear(512, 10)
 
 ######################################################################
-# Now all parameters in the model, except the parameters of ``model.fc``, are excluded from the DAG.
+# Now all parameters in the model, except the parameters of ``model.fc``, are frozen.
 # The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
 # Optimize only the classifier
-optimizer = torch.optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
+optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
 
 ##########################################################################
 # Notice although we register all the parameters in the optimizer,
