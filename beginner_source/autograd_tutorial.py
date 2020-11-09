@@ -257,11 +257,9 @@ y = torch.rand(5, 5)
 z = torch.rand((5, 5), requires_grad=True)
 
 a = x + y
-print("Does `a` require gradients?")
-print(a.requires_grad)
+print(f"Does `a` require gradients? : {a.requires_grad}")
 b = x + z
-print("Does `b` require gradients?")
-print(b.requires_grad)
+print(f"Does `b` require gradients?: {b.requires_grad}")
 
 
 ######################################################################
@@ -280,11 +278,14 @@ model = torchvision.models.resnet18(pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
 
+######################################################################
 # We need to update the parameters of our classifier to perform on our new task.
 # In resnet, the classifier is the linear layer in model.fc
 # We can simply replace it with a new linear layer (which is "unfrozen" by default)
+
 model.fc = nn.Linear(512, 100)
 
+######################################################################
 # Now, all parameters in the model, except the parameters of model.fc do not compute gradients.
 # The only parameters that compute gradients are the weights and bias of model.fc.
 
@@ -293,11 +294,9 @@ optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
 
 ##########################################################################
 # Notice although we register all the parameters in the optimizer,
-# the only parameters that are computing gradients (and updated in gradient descent)
+# the only parameters that are computing gradients (and are updated in gradient descent)
 # are the weights and bias of the classifier.
-
-
-######################################################################
+#
 # The same functionality is available as a context manager in
 # `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html>`__
 #
