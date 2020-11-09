@@ -24,7 +24,7 @@ functions to make this guess.
 proportionate to the error in its guess. It does this by traversing
 backwards from the output, collecting the derivatives of the error with
 respect to the parameters of the functions (*gradients*), and optimizing
-the parameters using **gradient descent**. For a more detailed walkthrough
+the parameters using gradient descent. For a more detailed walkthrough
 of backprop, check out this `video from
 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
 
@@ -222,15 +222,25 @@ print(-2*b == b.grad)
 # In a forward pass, autograd does two things simultaneously:
 # - run the requested operation to compute a resulting tensor, and
 # - maintain the operation’s *gradient function* in the DAG.
-# This is stored in the resulting tensor’s .\ ``grad_fn`` attribute.
+# This is stored in the resulting tensor’s ``.grad_fn`` attribute.
 #
 # The backward pass kicks off when ``.backward()`` is called on the DAG
-# root. ``autograd`` then \* computes the gradients from each ``.grad_fn``, \*
-# accumulates them in the respective tensor’s ``.grad`` attribute, and \*
-# using the chain rule, propagates all the way to the leaf tensors.
+# root. ``autograd`` then
+# - computes the gradients from each ``.grad_fn``,
+# - accumulates them in the respective tensor’s ``.grad`` attribute, and
+# - using the chain rule, propagates all the way to the leaf tensors.
 #
-# .. Note::
-#   ** DAGs are dynamic in PyTorch**
+# The DAG in the above example can be visualized using ``torchviz``. In the graph,
+# the arrows are in the direction of the forward pass. The nodes represent the backward functions
+# of each operation in the forward pass. The leaf nodes in blue represent our leaf tensors ``a`` and ``b``.
+#
+import torchviz
+torchviz.make_dot(Q)
+
+
+#######################################################################
+# .. note::
+#   **DAGs are dynamic in PyTorch**
 #   An important thing to note is that the graph is recreated from scratch; after each
 #   ``.backward()`` call, autograd starts populating a new graph. This is
 #   exactly what allows you to use control flow statements in your model;
@@ -267,8 +277,11 @@ print(f"Does `b` require gradients?: {b.requires_grad}")
 # It is useful to "freeze" part of your model if you know in advance that you won't need the gradients of those parameters
 # (this offers some performance benefits by reducing autograd computations).
 #
-# When finetuning a pretrained network, we leave most of the model alone (by freezing it) and only update the "classifier" layers to make predictions on new labels.
-# Let's walk through a small example to demonstrate this
+# Another common usecase where exclusion from the DAG is important is for
+# `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
+#
+# In finetuning, we freeze most of the model and typically only modify the "classifier" layers to make predictions on new labels.
+# Let's walk through a small example to demonstrate this. As before, we load a pretrained resnet18 model, and freeze all the parameters.
 
 from torch import nn, optim
 
@@ -279,25 +292,26 @@ for param in model.parameters():
     param.requires_grad = False
 
 ######################################################################
-# We need to update the parameters of our classifier to perform on our new task.
-# In resnet, the classifier is the linear layer in model.fc
-# We can simply replace it with a new linear layer (which is "unfrozen" by default)
+# Let's say we want to finetune the model on a new dataset with 10 labels.
+# In resnet, the classifier is the last linear layer ``model.fc``.
+# We can simply replace it with a new linear layer (unfrozen by default)
+# that acts as our classifier.
 
-model.fc = nn.Linear(512, 100)
+model.fc = nn.Linear(512, 10)
 
 ######################################################################
-# Now, all parameters in the model, except the parameters of model.fc do not compute gradients.
-# The only parameters that compute gradients are the weights and bias of model.fc.
+# Now all parameters in the model, except the parameters of ``model.fc``, are frozen.
+# The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
 # Optimize only the classifier
 optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
 
 ##########################################################################
 # Notice although we register all the parameters in the optimizer,
-# the only parameters that are computing gradients (and are updated in gradient descent)
+# the only parameters that are computing gradients (and hence updated in gradient descent)
 # are the weights and bias of the classifier.
 #
-# The same functionality is available as a context manager in
+# The same exclusionary functionality is available as a context manager in
 # `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html>`__
 #
 
