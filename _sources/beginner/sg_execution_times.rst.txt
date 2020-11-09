@@ -5,7 +5,7 @@
 
 Computation times
 =================
-**00:01.856** total execution time for **beginner** files:
+**00:01.325** total execution time for **beginner** files:
 
-- **00:01.787**: :ref:`sphx_glr_beginner_autograd_tutorial.py` (``autograd_tutorial.py``)
-- **00:00.069**: :ref:`sphx_glr_beginner_tensor_tutorial.py` (``tensor_tutorial.py``)
+- **00:01.266**: :ref:`sphx_glr_beginner_autograd_tutorial.py` (``autograd_tutorial.py``)
+- **00:00.059**: :ref:`sphx_glr_beginner_tensor_tutorial.py` (``tensor_tutorial.py``)

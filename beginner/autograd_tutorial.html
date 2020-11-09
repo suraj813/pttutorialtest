@@ -313,7 +313,7 @@ functions to make this guess.</p>
 proportionate to the error in its guess. It does this by traversing
 backwards from the output, collecting the derivatives of the error with
 respect to the parameters of the functions (<em>gradients</em>), and optimizing
-the parameters using <strong>gradient descent</strong>. For a more detailed walkthrough
+the parameters using gradient descent. For a more detailed walkthrough
 of backprop, check out this <a class="reference external" href="https://www.youtube.com/watch?v=tIeHLnjs5U8">video from
 3Blue1Brown</a>.</p>
 </div>
@@ -462,14 +462,22 @@ automatically compute the gradients using the chain rule.</p>
 <p>In a forward pass, autograd does two things simultaneously:
 - run the requested operation to compute a resulting tensor, and
 - maintain the operation’s <em>gradient function</em> in the DAG.
-This is stored in the resulting tensor’s .<code class="docutils literal notranslate"><span class="pre">grad_fn</span></code> attribute.</p>
+This is stored in the resulting tensor’s <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code> attribute.</p>
 <p>The backward pass kicks off when <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> is called on the DAG
-root. <code class="docutils literal notranslate"><span class="pre">autograd</span></code> then * computes the gradients from each <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code>, *
-accumulates them in the respective tensor’s <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute, and *
-using the chain rule, propagates all the way to the leaf tensors.</p>
+root. <code class="docutils literal notranslate"><span class="pre">autograd</span></code> then
+- computes the gradients from each <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code>,
+- accumulates them in the respective tensor’s <code class="docutils literal notranslate"><span class="pre">.grad</span></code> attribute, and
+- using the chain rule, propagates all the way to the leaf tensors.</p>
+<p>The DAG in the above example can be visualized using <code class="docutils literal notranslate"><span class="pre">torchviz</span></code>. In the graph,
+the arrows are in the direction of the forward pass. The nodes represent the backward functions
+of each operation in the forward pass. The leaf nodes in blue represent our leaf tensors <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchviz</span>
+<span class="n">torchviz</span><span class="o">.</span><span class="n">make_dot</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>** DAGs are dynamic in PyTorch**
+<p><strong>DAGs are dynamic in PyTorch</strong>
 An important thing to note is that the graph is recreated from scratch; after each
 <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> call, autograd starts populating a new graph. This is
 exactly what allows you to use control flow statements in your model;
@@ -489,49 +497,47 @@ single input tensor has <code class="docutils literal notranslate"><span class="
 <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Does `a` require gradients?&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Does `a` require gradients? : </span><span class="si">{</span><span class="n">a</span><span class="o">.</span><span class="n">requires_grad</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">z</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Does `b` require gradients?&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Does `b` require gradients?: </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">requires_grad</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Does `a` require gradients?
-False
-Does `b` require gradients?
-True
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Does `a` require gradients? : False
+Does `b` require gradients?: True
 </pre></div>
 </div>
 <p>In a NN, parameters that don’t compute gradients are usually called <strong>frozen parameters</strong>.
 It is useful to “freeze” part of your model if you know in advance that you won’t need the gradients of those parameters
 (this offers some performance benefits by reducing autograd computations).</p>
-<p>When finetuning a pretrained network, we leave most of the model alone (by freezing it) and only update the “classifier” layers to make predictions on new labels.
-Let’s walk through a small example to demonstrate this</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">optim</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>Another common usecase where exclusion from the DAG is important is for
+<a class="reference external" href="https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html">finetuning a pretrained network</a></p>
+<p>In finetuning, we freeze most of the model and typically only modify the “classifier” layers to make predictions on new labels.
+Let’s walk through a small example to demonstrate this. We load a pretrained resnet18 model and freeze all the parameters.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Freeze all the parameters in the network</span>
 <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
-
-<span class="c1"># We need to update the parameters of our classifier to perform on our new task.</span>
-<span class="c1"># In resnet, the classifier is the linear layer in model.fc</span>
-<span class="c1"># We can simply replace it with a new linear layer (which is &quot;unfrozen&quot; by default)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-
-<span class="c1"># Now, all parameters in the model, except the parameters of model.fc do not compute gradients.</span>
-<span class="c1"># The only parameters that compute gradients are the weights and bias of model.fc.</span>
-
-<span class="c1"># Optimize only the classifier</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s say we want to finetune the model on a new dataset with 10 labels.
+In resnet, the classifier is the last linear layer <code class="docutils literal notranslate"><span class="pre">model.fc</span></code>.
+We can simply replace it with a new linear layer (unfrozen by default)
+that acts as our classifier.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now all parameters in the model, except the parameters of <code class="docutils literal notranslate"><span class="pre">model.fc</span></code>, are excluded from the DAG.
+The only parameters that compute gradients are the weights and bias of <code class="docutils literal notranslate"><span class="pre">model.fc</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optimize only the classifier</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Notice although we register all the parameters in the optimizer,
-the only parameters that are computing gradients (and updated in gradient descent)
+the only parameters that are computing gradients (and hence updated in gradient descent)
 are the weights and bias of the classifier.</p>
-<p>The same functionality is available as a context manager in
+<p>The same exclusionary functionality is available as a context manager in
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html">torch.no_grad()</a></p>
 </div>
 </div>
@@ -542,7 +548,7 @@ are the weights and bias of the classifier.</p>
 <li><p><a class="reference external" href="https://pytorch.org/docs/stable/notes/autograd.html">In-place operations &amp; Multithreaded Autograd</a></p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC">Example implementation of reverse-mode autodiff</a></p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.787 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.266 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-autograd-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/e9cf8178ed40282023c2f454e34e40dc/autograd_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial.py</span></code></a></p>

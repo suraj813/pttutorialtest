@@ -7,10 +7,9 @@ and matrices. In PyTorch, we use tensors to encode the inputs and
 outputs of a model, as well as the model’s parameters.
 
 Tensors are similar to NumPy’s ndarrays, except that tensors can run on
-a GPU to accelerate computing. If you’re familiar with ndarrays, you’ll
+GPUs or other specialized hardware to accelerate computing. If you’re familiar with ndarrays, you’ll
 be right at home with the Tensor API. If not, follow along in this quick
 API walkthrough.
-
 
 """
 
@@ -24,49 +23,41 @@ import numpy as np
 #
 # Tensors can be initialized in various ways. Take a look at the following examples
 #
-# **Directly from data / NumPy arrays:**
-# Tensors can be created directly by passing a Python list or sequence using the ``torch.tensor()`` constructor. The data type is automatically inferred from the data.
+# **Directly from data**
+# Tensors can be created directly from data. The data type is automatically inferred.
 
 data = [[1, 2],[3, 4]]
-np_array = np.array(data)
+x_data = torch.tensor(data)
 
-tnsr_from_data = torch.tensor(data)
-tnsr_from_np = torch.from_numpy(np_array)
+######################################################################
+# **From a NumPy array**
+# Tensors can be created from NumPy arrays (and vice versa - see :ref:`bridge-to-np-label`).
+np_array = np.array(data)
+x_np = torch.from_numpy(np_array)
 
 
 ###############################################################
 # **From another tensor:**
-# The new tensor retains the properties of the arg tensor, unless explicitly overridden.
+# The new tensor retains the properties (shape, datatype) of the arg tensor, unless explicitly overridden.
 
-new_ones_tnsr = torch.ones_like(tnsr_from_data) # 2 x 2 matrix of ones
+x_ones = torch.ones_like(x_data) # 2 x 2 matrix of ones
 
-try:
-  new_rand_tnsr = torch.rand_like(tnsr_from_data) # 2 x 2 matrix of random numbers
-except RuntimeError as e:
-  print(f"RuntimeError thrown: {e}")
-  print()
-  print(f"Random values in PyTorch are floating points. Datatype passed to torch.rand_like(): {tnsr_from_data.dtype}")
-
-
-######################################################################
-# This works after we override the dtype property
-#
-
-new_rand_tnsr = torch.rand_like(tnsr_from_data, dtype=torch.float)
-print(new_rand_tnsr)
+x_rand = torch.rand_like(x_data, dtype=torch.float)
+print(x_rand)
 
 
 ######################################################################
 # **With random or constant values:**
 #
+# ``shape`` is a tuple of tensor dimensions. In the functions below, it determines the dimensionality of the output tensor.
 
 shape = (2,3,)
-rand_tnsr = torch.rand(shape)
-ones_tnsr = torch.ones(shape)
-zeros_tnsr = torch.zeros(shape)
-print(f"Random Tensor:\n{rand_tnsr} \n\n \
-        Ones Tensor:\n{ones_tnsr} \n\n \
-        Zeros Tensor:\n{zeros_tnsr}")
+rand_tensor = torch.rand(shape)
+ones_tensor = torch.ones(shape)
+zeros_tensor = torch.zeros(shape)
+print(f"Random Tensor:\n{rand_tensor}\n")
+print(f"Ones Tensor:\n{ones_tensor}\n")
+print(f"Zeros Tensor:\n{zeros_tensor}")
 
 
 
@@ -80,13 +71,13 @@ print(f"Random Tensor:\n{rand_tnsr} \n\n \
 # Tensor Attributes
 # ~~~~~~~~~~~~~~~~~
 #
-# Tensor attributes describe their shape data type and where they live.
+# Tensor attributes describe their shape, datatype, and the device on which they are stored.
 
-tnsr = torch.rand(3,4)
+tensor = torch.rand(3,4)
 
-print(f"Shape of tensor: {tnsr.shape}")
-print(f"Datatype of tensor: {tnsr.dtype}")
-print(f"Device tensor lives on: {tnsr.device}")
+print(f"Shape of tensor: {tensor.shape}")
+print(f"Datatype of tensor: {tensor.dtype}")
+print(f"Device tensor lives on: {tensor.device}")
 
 
 ######################################################################
@@ -110,47 +101,54 @@ print(f"Device tensor lives on: {tnsr.device}")
 
 # We move our tensor to the GPU if available
 if torch.cuda.is_available():
-  tnsr = tnsr.to('cuda')
+  tensor = tensor.to('cuda')
 
 
 ######################################################################
-# Try out some of the operations from the list. If you're familiar with the NumPy API, you'll find the Tensor API a breeze to use.
+# Try out some of the operations from the list.
+# If you're familiar with the NumPy API, you'll find the Tensor API a breeze to use.
 #
 
 ###############################################################
 # **Standard numpy-like indexing and slicing:**
 
-tnsr = torch.ones(4, 4)
-tnsr[:,1] = 0
-print(tnsr)
+tensor = torch.ones(4, 4)
+tensor[:,1] = 0
+print(tensor)
 
 ######################################################################
-# **Both of these are joining ops, but they are subtly different.**
-
-t1 = torch.cat([tnsr, tnsr], dim=1)
-t2 = torch.stack([tnsr, tnsr], dim=1)
+# **Joining tensors** You can use ``torch.cat`` to concatenate a sequence of tensors along a given dimension.
+# See also `torch.stack <https://pytorch.org/docs/stable/generated/torch.stack.html>`__,
+# another tensor joining op that is subtly different from ``torch.cat``.
+t1 = torch.cat([tensor, tensor, tensor], dim=1)
 print(t1)
-print()
-print(t2)
 
 ######################################################################
-# **Multiply op - multiple syntaxes**
+# **Multiplying tensors**
 
-# both ops compute element-wise product
-print(tnsr * tnsr == tnsr.mul(tnsr))
+# This computes the element-wise product
+print(tensor.mul(tensor))
+# Alternative syntax:
+print(tensor * tensor)
 
-# both ops compute matrix product
-print(tnsr @ tnsr.T == tnsr.matmul(tnsr.T))
+# This computes the matrix multiplication between two tensors
+print(tensor.matmul(tensor.T))
+# Alternative syntax:
+print(tensor @ tensor.T)
+
+
+######################################################################
+# **In-place operations**
+# Operations that have a '_' suffix are in-place. For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
+
+print(tensor)
+tensor.add_(5)
+print(tensor)
 
 ######################################################################
 # .. note::
-#     Operations that have a '_' suffix are in-place. For example:
-#     ``x.copy_(y)``, ``x.t_()``, will change ``x``. In-place operations
-#     don't work well with Autograd, and their use is discouraged.
-
-print(tnsr)
-tnsr.t_()
-print(tnsr)
+#      In-place operations save some memory, but can be problematic when computing derivatives because of an immediate loss
+#      of history. Hence, their use is discouraged.
 
 ######################################################################
 # --------------
@@ -158,6 +156,8 @@ print(tnsr)
 
 
 ######################################################################
+# .. _bridge-to-np-label:
+#
 # Bridge with NumPy
 # ~~~~~~~~~~~~~~~~~
 # Tensors on the CPU and NumPy arrays can share their underlying memory

@@ -15,10 +15,9 @@ and matrices. In PyTorch, we use tensors to encode the inputs and
 outputs of a model, as well as the model’s parameters.
 
 Tensors are similar to NumPy’s ndarrays, except that tensors can run on
-a GPU to accelerate computing. If you’re familiar with ndarrays, you’ll
+GPUs or other specialized hardware to accelerate computing. If you’re familiar with ndarrays, you’ll
 be right at home with the Tensor API. If not, follow along in this quick
 API walkthrough.
-
 
 
 
@@ -40,18 +39,30 @@ Tensor Initialization
 
 Tensors can be initialized in various ways. Take a look at the following examples
 
-**Directly from data / NumPy arrays:**
-Tensors can be created directly by passing a Python list or sequence using the ``torch.tensor()`` constructor. The data type is automatically inferred from the data.
+**Directly from data**
+Tensors can be created directly from data. The data type is automatically inferred.
 
 
 .. code-block:: default
 
 
     data = [[1, 2],[3, 4]]
-    np_array = np.array(data)
+    x_data = torch.tensor(data)
 
-    tnsr_from_data = torch.tensor(data)
-    tnsr_from_np = torch.from_numpy(np_array)
+
+
+
+
+
+
+**From a NumPy array**
+Tensors can be created from NumPy arrays (and vice versa - see :ref:`bridge-to-np-label`).
+
+
+.. code-block:: default
+
+    np_array = np.array(data)
+    x_np = torch.from_numpy(np_array)
 
 
 
@@ -61,20 +72,16 @@ Tensors can be created directly by passing a Python list or sequence using the `
 
 
 **From another tensor:**
-The new tensor retains the properties of the arg tensor, unless explicitly overridden.
+The new tensor retains the properties (shape, datatype) of the arg tensor, unless explicitly overridden.
 
 
 .. code-block:: default
 
 
-    new_ones_tnsr = torch.ones_like(tnsr_from_data) # 2 x 2 matrix of ones
+    x_ones = torch.ones_like(x_data) # 2 x 2 matrix of ones
 
-    try:
-      new_rand_tnsr = torch.rand_like(tnsr_from_data) # 2 x 2 matrix of random numbers
-    except RuntimeError as e:
-      print(f"RuntimeError thrown: {e}")
-      print()
-      print(f"Random values in PyTorch are floating points. Datatype passed to torch.rand_like(): {tnsr_from_data.dtype}")
+    x_rand = torch.rand_like(x_data, dtype=torch.float)
+    print(x_rand)
 
 
 
@@ -87,50 +94,25 @@ The new tensor retains the properties of the arg tensor, unless explicitly overr
 
  .. code-block:: none
 
-    RuntimeError thrown: "check_uniform_bounds" not implemented for 'Long'
-
-    Random values in PyTorch are floating points. Datatype passed to torch.rand_like(): torch.int64
-
-
-This works after we override the dtype property
-
-
-
-.. code-block:: default
-
-
-    new_rand_tnsr = torch.rand_like(tnsr_from_data, dtype=torch.float)
-    print(new_rand_tnsr)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    tensor([[0.4782, 0.0577],
-            [0.2378, 0.2681]])
+    tensor([[0.7908, 0.7159],
+            [0.2629, 0.4373]])
 
 
 **With random or constant values:**
 
+``shape`` is a tuple of tensor dimensions. In the functions below, it determines the dimensionality of the output tensor.
 
 
 .. code-block:: default
 
 
     shape = (2,3,)
-    rand_tnsr = torch.rand(shape)
-    ones_tnsr = torch.ones(shape)
-    zeros_tnsr = torch.zeros(shape)
-    print(f"Random Tensor:\n{rand_tnsr} \n\n \
-            Ones Tensor:\n{ones_tnsr} \n\n \
-            Zeros Tensor:\n{zeros_tnsr}")
+    rand_tensor = torch.rand(shape)
+    ones_tensor = torch.ones(shape)
+    zeros_tensor = torch.zeros(shape)
+    print(f"Random Tensor:\n{rand_tensor}\n")
+    print(f"Ones Tensor:\n{ones_tensor}\n")
+    print(f"Zeros Tensor:\n{zeros_tensor}")
 
 
 
@@ -146,14 +128,14 @@ This works after we override the dtype property
  .. code-block:: none
 
     Random Tensor:
-    tensor([[0.3376, 0.5569, 0.8947],
-            [0.0201, 0.5931, 0.4131]]) 
+    tensor([[0.7693, 0.8887, 0.8763],
+            [0.5770, 0.4157, 0.2495]])
 
-             Ones Tensor:
+    Ones Tensor:
     tensor([[1., 1., 1.],
-            [1., 1., 1.]]) 
+            [1., 1., 1.]])
 
-             Zeros Tensor:
+    Zeros Tensor:
     tensor([[0., 0., 0.],
             [0., 0., 0.]])
 
@@ -164,17 +146,17 @@ This works after we override the dtype property
 Tensor Attributes
 ~~~~~~~~~~~~~~~~~
 
-Tensor attributes describe their shape data type and where they live.
+Tensor attributes describe their shape, datatype, and the device on which they are stored.
 
 
 .. code-block:: default
 
 
-    tnsr = torch.rand(3,4)
+    tensor = torch.rand(3,4)
 
-    print(f"Shape of tensor: {tnsr.shape}")
-    print(f"Datatype of tensor: {tnsr.dtype}")
-    print(f"Device tensor lives on: {tnsr.device}")
+    print(f"Shape of tensor: {tensor.shape}")
+    print(f"Datatype of tensor: {tensor.dtype}")
+    print(f"Device tensor lives on: {tensor.device}")
 
 
 
@@ -214,7 +196,7 @@ Settings.
 
     # We move our tensor to the GPU if available
     if torch.cuda.is_available():
-      tnsr = tnsr.to('cuda')
+      tensor = tensor.to('cuda')
 
 
 
@@ -223,7 +205,8 @@ Settings.
 
 
 
-Try out some of the operations from the list. If you're familiar with the NumPy API, you'll find the Tensor API a breeze to use.
+Try out some of the operations from the list.
+If you're familiar with the NumPy API, you'll find the Tensor API a breeze to use.
 
 
 **Standard numpy-like indexing and slicing:**
@@ -232,9 +215,9 @@ Try out some of the operations from the list. If you're familiar with the NumPy 
 .. code-block:: default
 
 
-    tnsr = torch.ones(4, 4)
-    tnsr[:,1] = 0
-    print(tnsr)
+    tensor = torch.ones(4, 4)
+    tensor[:,1] = 0
+    print(tensor)
 
 
 
@@ -252,17 +235,15 @@ Try out some of the operations from the list. If you're familiar with the NumPy 
             [1., 0., 1., 1.]])
 
 
-**Both of these are joining ops, but they are subtly different.**
+**Joining tensors** You can use ``torch.cat`` to concatenate a sequence of tensors along a given dimension.
+See also `torch.stack <https://pytorch.org/docs/stable/generated/torch.stack.html>`__,
+another tensor joining op that is subtly different from ``torch.cat``.
 
 
 .. code-block:: default
 
-
-    t1 = torch.cat([tnsr, tnsr], dim=1)
-    t2 = torch.stack([tnsr, tnsr], dim=1)
+    t1 = torch.cat([tensor, tensor, tensor], dim=1)
     print(t1)
-    print()
-    print(t2)
 
 
 
@@ -274,35 +255,28 @@ Try out some of the operations from the list. If you're familiar with the NumPy 
 
  .. code-block:: none
 
-    tensor([[1., 0., 1., 1., 1., 0., 1., 1.],
-            [1., 0., 1., 1., 1., 0., 1., 1.],
-            [1., 0., 1., 1., 1., 0., 1., 1.],
-            [1., 0., 1., 1., 1., 0., 1., 1.]])
-
-    tensor([[[1., 0., 1., 1.],
-             [1., 0., 1., 1.]],
-
-            [[1., 0., 1., 1.],
-             [1., 0., 1., 1.]],
-
-            [[1., 0., 1., 1.],
-             [1., 0., 1., 1.]],
-
-            [[1., 0., 1., 1.],
-             [1., 0., 1., 1.]]])
+    tensor([[1., 0., 1., 1., 1., 0., 1., 1., 1., 0., 1., 1.],
+            [1., 0., 1., 1., 1., 0., 1., 1., 1., 0., 1., 1.],
+            [1., 0., 1., 1., 1., 0., 1., 1., 1., 0., 1., 1.],
+            [1., 0., 1., 1., 1., 0., 1., 1., 1., 0., 1., 1.]])
 
 
-**Multiply op - multiple syntaxes**
+**Multiplying tensors**
 
 
 .. code-block:: default
 
 
-    # both ops compute element-wise product
-    print(tnsr * tnsr == tnsr.mul(tnsr))
+    # This computes the element-wise product
+    print(tensor.mul(tensor))
+    # Alternative syntax:
+    print(tensor * tensor)
 
-    # both ops compute matrix product
-    print(tnsr @ tnsr.T == tnsr.matmul(tnsr.T))
+    # This computes the matrix multiplication between two tensors
+    print(tensor.matmul(tensor.T))
+    # Alternative syntax:
+    print(tensor @ tensor.T)
+
 
 
 
@@ -314,51 +288,63 @@ Try out some of the operations from the list. If you're familiar with the NumPy 
 
  .. code-block:: none
 
-    tensor([[True, True, True, True],
-            [True, True, True, True],
-            [True, True, True, True],
-            [True, True, True, True]])
-    tensor([[True, True, True, True],
-            [True, True, True, True],
-            [True, True, True, True],
-            [True, True, True, True]])
+    tensor([[1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.]])
+    tensor([[1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.]])
+    tensor([[3., 3., 3., 3.],
+            [3., 3., 3., 3.],
+            [3., 3., 3., 3.],
+            [3., 3., 3., 3.]])
+    tensor([[3., 3., 3., 3.],
+            [3., 3., 3., 3.],
+            [3., 3., 3., 3.],
+            [3., 3., 3., 3.]])
+
+
+**In-place operations**
+Operations that have a '_' suffix are in-place. For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
+
+
+.. code-block:: default
+
+
+    print(tensor)
+    tensor.add_(5)
+    print(tensor)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.],
+            [1., 0., 1., 1.]])
+    tensor([[6., 5., 6., 6.],
+            [6., 5., 6., 6.],
+            [6., 5., 6., 6.],
+            [6., 5., 6., 6.]])
 
 
 .. note::
-    Operations that have a '_' suffix are in-place. For example:
-    ``x.copy_(y)``, ``x.t_()``, will change ``x``. In-place operations
-    don't work well with Autograd, and their use is discouraged.
-
-
-.. code-block:: default
-
-
-    print(tnsr)
-    tnsr.t_()
-    print(tnsr)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    tensor([[1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.]])
-    tensor([[1., 1., 1., 1.],
-            [0., 0., 0., 0.],
-            [1., 1., 1., 1.],
-            [1., 1., 1., 1.]])
-
+     In-place operations save some memory, but can be problematic when computing derivatives because of an immediate loss
+     of history. Hence, their use is discouraged.
 
 --------------
 
+
+.. _bridge-to-np-label:
 
 Bridge with NumPy
 ~~~~~~~~~~~~~~~~~
@@ -443,7 +429,7 @@ NumPy array to Tensor
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.069 seconds)
+   **Total running time of the script:** ( 0 minutes  0.059 seconds)
 
 
 .. _sphx_glr_download_beginner_tensor_tutorial.py:
