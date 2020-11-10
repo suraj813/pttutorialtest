@@ -176,7 +176,7 @@ print(tensor)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 t = torch.ones(5)
 print(f"t: {t}")
-n = a.numpy()
+n = t.numpy()
 print(f"n: {n}")
 
 ######################################################################
@@ -191,7 +191,7 @@ print(f"n: {n}")
 # NumPy array to Tensor
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 n = np.ones(5)
-t = torch.from_numpy(a)
+t = torch.from_numpy(n)
 
 ######################################################################
 # Changes in the NumPy array reflects in the tensor.
