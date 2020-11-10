@@ -308,15 +308,16 @@ tensors. By tracing this graph from roots to leaves, you can
 automatically compute the gradients using the chain rule.
 
 In a forward pass, autograd does two things simultaneously:
-   - run the requested operation to compute a resulting tensor, and
-   - maintain the operation’s *gradient function* in the DAG.
 
+- run the requested operation to compute a resulting tensor, and
+- maintain the operation’s *gradient function* in the DAG.
 
 The backward pass kicks off when ``.backward()`` is called on the DAG
 root. ``autograd`` then:
-   - computes the gradients from each ``.grad_fn``,
-   - accumulates them in the respective tensor’s ``.grad`` attribute, and
-   - using the chain rule, propagates all the way to the leaf tensors.
+
+- computes the gradients from each ``.grad_fn``,
+- accumulates them in the respective tensor’s ``.grad`` attribute, and
+- using the chain rule, propagates all the way to the leaf tensors.
 
 Below is a visual representation of the DAG in our example. In the graph,
 the arrows are in the direction of the forward pass. The nodes represent the backward functions
@@ -331,7 +332,6 @@ of each operation in the forward pass. The leaf nodes in blue represent our leaf
   exactly what allows you to use control flow statements in your model;
   you can change the shape, size and operations at every iteration if
   needed.
-
 
 Exclusion from the DAG
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -454,7 +454,7 @@ Further readings:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.154 seconds)
+   **Total running time of the script:** ( 0 minutes  0.969 seconds)
 
 
 .. _sphx_glr_download_beginner_autograd_tutorial.py:

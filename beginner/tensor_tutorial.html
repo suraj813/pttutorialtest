@@ -306,30 +306,36 @@ API walkthrough.</p>
 </div>
 <div class="section" id="tensor-initialization">
 <h2>Tensor Initialization<a class="headerlink" href="#tensor-initialization" title="Permalink to this headline">¶</a></h2>
-<p>Tensors can be initialized in various ways. Take a look at the following examples</p>
-<p><strong>Directly from data</strong>
-Tensors can be created directly from data. The data type is automatically inferred.</p>
+<p>Tensors can be initialized in various ways. Take a look at the following examples:</p>
+<p><strong>Directly from data</strong></p>
+<p>Tensors can be created directly from data. The data type is automatically inferred.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
 <span class="n">x_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>From a NumPy array</strong>
-Tensors can be created from NumPy arrays (and vice versa - see <a class="reference internal" href="#bridge-to-np-label"><span class="std std-ref">Bridge with NumPy</span></a>).</p>
+<p><strong>From a NumPy array</strong></p>
+<p>Tensors can be created from NumPy arrays (and vice versa - see <a class="reference internal" href="#bridge-to-np-label"><span class="std std-ref">Bridge with NumPy</span></a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">np_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="n">x_np</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np_array</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>From another tensor:</strong>
-The new tensor retains the properties (shape, datatype) of the arg tensor, unless explicitly overridden.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span> <span class="c1"># 2 x 2 matrix of ones</span>
+<p><strong>From another tensor:</strong></p>
+<p>The new tensor retains the properties (shape, datatype) of the argument tensor, unless explicitly overridden.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span> <span class="c1"># retains the properties of x_data</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ones Tensor: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">x_ones</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="n">x_rand</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x_rand</span><span class="p">)</span>
+<span class="n">x_rand</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="c1"># overrides the datatype of x_data</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Random Tensor: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">x_rand</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[0.2613, 0.8315],
-        [0.7869, 0.6000]])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Ones Tensor:
+ tensor([[1, 1],
+        [1, 1]])
+
+Random Tensor:
+ tensor([[0.3206, 0.1907],
+        [0.1240, 0.7911]])
 </pre></div>
 </div>
 <p><strong>With random or constant values:</strong></p>
@@ -338,22 +344,23 @@ The new tensor retains the properties (shape, datatype) of the arg tensor, unles
 <span class="n">rand_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
 <span class="n">ones_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
 <span class="n">zeros_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Random Tensor:</span><span class="se">\n</span><span class="si">{</span><span class="n">rand_tensor</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ones Tensor:</span><span class="se">\n</span><span class="si">{</span><span class="n">ones_tensor</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zeros Tensor:</span><span class="se">\n</span><span class="si">{</span><span class="n">zeros_tensor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Random Tensor: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">rand_tensor</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ones Tensor: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">ones_tensor</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zeros Tensor: </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">zeros_tensor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Random Tensor:
-tensor([[0.6370, 0.7918, 0.1659],
-        [0.7907, 0.9453, 0.0484]])
+ tensor([[0.0581, 0.2295, 0.7922],
+        [0.5777, 0.0522, 0.6624]])
 
 Ones Tensor:
-tensor([[1., 1., 1.],
+ tensor([[1., 1., 1.],
         [1., 1., 1.]])
 
 Zeros Tensor:
-tensor([[0., 0., 0.],
+ tensor([[0., 0., 0.],
         [0., 0., 0.]])
 </pre></div>
 </div>
@@ -366,13 +373,13 @@ tensor([[0., 0., 0.],
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of tensor: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Datatype of tensor: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Device tensor lives on: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Device tensor is stored on: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of tensor: torch.Size([3, 4])
 Datatype of tensor: torch.float32
-Device tensor lives on: cpu
+Device tensor is stored on: cpu
 </pre></div>
 </div>
 </div>
@@ -422,37 +429,47 @@ another tensor joining op that is subtly different from <code class="docutils li
 </div>
 <p><strong>Multiplying tensors</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This computes the element-wise product</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tensor</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tensor.mul(tensor) </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="c1"># Alternative syntax:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">tensor</span><span class="p">)</span>
-
-<span class="c1"># This computes the matrix multiplication between two tensors</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
-<span class="c1"># Alternative syntax:</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">tensor</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tensor * tensor </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">tensor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[1., 0., 1., 1.],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor.mul(tensor)
+ tensor([[1., 0., 1., 1.],
         [1., 0., 1., 1.],
         [1., 0., 1., 1.],
         [1., 0., 1., 1.]])
-tensor([[1., 0., 1., 1.],
+
+tensor * tensor
+ tensor([[1., 0., 1., 1.],
         [1., 0., 1., 1.],
         [1., 0., 1., 1.],
         [1., 0., 1., 1.]])
-tensor([[3., 3., 3., 3.],
+</pre></div>
+</div>
+<p>This computes the matrix multiplication between two tensors</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tensor.matmul(tensor.T) </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Alternative syntax:</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tensor @ tensor.T </span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">tensor</span> <span class="o">@</span> <span class="n">tensor</span><span class="o">.</span><span class="n">T</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor.matmul(tensor.T)
+ tensor([[3., 3., 3., 3.],
         [3., 3., 3., 3.],
         [3., 3., 3., 3.],
         [3., 3., 3., 3.]])
-tensor([[3., 3., 3., 3.],
+
+tensor @ tensor.T
+ tensor([[3., 3., 3., 3.],
         [3., 3., 3., 3.],
         [3., 3., 3., 3.],
         [3., 3., 3., 3.]])
 </pre></div>
 </div>
 <p><strong>In-place operations</strong>
-Operations that have a ‘_’ suffix are in-place. For example: <code class="docutils literal notranslate"><span class="pre">x.copy_(y)</span></code>, <code class="docutils literal notranslate"><span class="pre">x.t_()</span></code>, will change <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+Operations that have a <code class="docutils literal notranslate"><span class="pre">_</span></code> suffix are in-place. For example: <code class="docutils literal notranslate"><span class="pre">x.copy_(y)</span></code>, <code class="docutils literal notranslate"><span class="pre">x.t_()</span></code>, will change <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
 <span class="n">tensor</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
@@ -482,44 +499,47 @@ of history. Hence, their use is discouraged.</p>
 locations, and changing one will change the other.</p>
 <div class="section" id="tensor-to-numpy-array">
 <h3>Tensor to NumPy array<a class="headerlink" href="#tensor-to-numpy-array" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;a: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b: </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t: </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n: </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>a: tensor([1., 1., 1., 1., 1.])
-b: [1. 1. 1. 1. 1.]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>t: tensor([1., 1., 1., 1., 1.])
+n: [1. 1. 1. 1. 1.]
 </pre></div>
 </div>
-<p>A change in <code class="docutils literal notranslate"><span class="pre">a</span></code> reflects in <code class="docutils literal notranslate"><span class="pre">b</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;a: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b: </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<p>A change in the tensor reflects in the NumPy array.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t: </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n: </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>a: tensor([2., 2., 2., 2., 2.])
-b: [2. 2. 2. 2. 2.]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>t: tensor([2., 2., 2., 2., 2.])
+n: [2. 2. 2. 2. 2.]
 </pre></div>
 </div>
 </div>
 <div class="section" id="numpy-array-to-tensor">
 <h3>NumPy array to Tensor<a class="headerlink" href="#numpy-array-to-tensor" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">a</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;a: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b: </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Changes in the NumPy array reflects in the tensor.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;t: </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n: </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>a: [2. 2. 2. 2. 2.]
-b: tensor([2., 2., 2., 2., 2.], dtype=torch.float64)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>t: tensor([2., 2., 2., 2., 2.], dtype=torch.float64)
+n: [2. 2. 2. 2. 2.]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.062 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.044 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-tensor-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/2061abd59bc4697d8760043485293c07/tensor_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensor_tutorial.py</span></code></a></p>

@@ -220,16 +220,16 @@ print(-2*b == b.grad)
 # automatically compute the gradients using the chain rule.
 #
 # In a forward pass, autograd does two things simultaneously:
-#    - run the requested operation to compute a resulting tensor, and
-#    - maintain the operation’s *gradient function* in the DAG.
 #
-
-######################################################################
+# - run the requested operation to compute a resulting tensor, and
+# - maintain the operation’s *gradient function* in the DAG.
+#
 # The backward pass kicks off when ``.backward()`` is called on the DAG
 # root. ``autograd`` then:
-#    - computes the gradients from each ``.grad_fn``,
-#    - accumulates them in the respective tensor’s ``.grad`` attribute, and
-#    - using the chain rule, propagates all the way to the leaf tensors.
+#
+# - computes the gradients from each ``.grad_fn``,
+# - accumulates them in the respective tensor’s ``.grad`` attribute, and
+# - using the chain rule, propagates all the way to the leaf tensors.
 #
 # Below is a visual representation of the DAG in our example. In the graph,
 # the arrows are in the direction of the forward pass. The nodes represent the backward functions
@@ -245,9 +245,6 @@ print(-2*b == b.grad)
 #   you can change the shape, size and operations at every iteration if
 #   needed.
 #
-
-
-######################################################################
 # Exclusion from the DAG
 # ^^^^^^^^^^^^^^^^^^^^^^
 #
