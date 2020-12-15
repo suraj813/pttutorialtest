@@ -27,6 +27,5 @@ scikit-image
 pillow==4.1.1
 wget
 torchviz
-opencv-python
 gym
 gym-super-mario-bros==7.3.0
