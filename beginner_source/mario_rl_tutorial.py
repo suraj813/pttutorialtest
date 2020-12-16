@@ -192,9 +192,8 @@ class ResizeObservation(gym.ObservationWrapper):
         self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
 
     def observation(self, observation):
-        observation = torch.tensor(observation, dtype=torch.float)
         transforms = T.Compose(
-            [T.Resize(self.shape, interpolation=Image.BILINEAR), T.Normalize(0, 255)]
+            [T.Resize(self.shape), T.Normalize(0, 255)]
         )
         observation = transforms(observation).squeeze(0)
         return observation
