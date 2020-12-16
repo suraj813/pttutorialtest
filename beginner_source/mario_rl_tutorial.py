@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
 AI-powered Mario
 ================
+"""
 
 Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
 Subramanian <https://github.com/suraj813>`__, `Howard
@@ -46,7 +46,7 @@ import random, datetime, os, copy
 # Gym is an OpenAI toolkit for RL
 import gym
 from gym.spaces import Box
-from gym.wrappers import FrameStack, GrayScaleObservation, TransformObservation
+from gym.wrappers import FrameStack#, GrayScaleObservation
 
 #NES Emulator for OpenAI Gym
 from nes_py.wrappers import JoypadSpace
@@ -145,6 +145,25 @@ print(f'{next_state.shape},\n {reward},\n {done},\n {info}')
 # frames.
 #
 
+class GrayScaleObservation(gym.ObservationWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        obs_shape = self.observation_space.shape[:2]
+        self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
+
+    def permute_orientation(self, observation):
+        # permute [H, W, C] array to [C, H, W] tensor
+        observation = np.transpose(observation, (2, 0, 1))
+        observation = torch.tensor(observation.copy(), dtype=torch.float)
+        return observation
+
+    def observation(self, observation):
+        observation = self.permute_orientation(observation)
+        transform = T.Grayscale()
+        observation = transform(observation)
+        return observation
+
+
 class ResizeObservation(gym.ObservationWrapper):
     def __init__(self, env, shape):
         super().__init__(env)
@@ -157,7 +176,7 @@ class ResizeObservation(gym.ObservationWrapper):
         self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
 
     def observation(self, observation):
-        observation = torch.tensor(observation, dtype=torch.float).unsqueeze(0)
+        observation = torch.tensor(observation, dtype=torch.float)
         transforms = T.Compose([
             T.Resize(self.shape, interpolation=Image.BILINEAR),
             T.Normalize(0, 255)
@@ -187,7 +206,7 @@ class SkipFrame(gym.Wrapper):
 
 # Apply Wrappers to environment
 env = SkipFrame(env, skip=4)
-env = GrayScaleObservation(env, keep_dim=False)
+env = GrayScaleObservation(env)
 env = ResizeObservation(env, shape=84)
 env = FrameStack(env, num_stack=4)
 
