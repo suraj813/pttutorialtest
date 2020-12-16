@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
 AI-powered Mario
 ================
-"""
 
 Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
 Subramanian <https://github.com/suraj813>`__, `Howard
@@ -57,7 +57,7 @@ import gym_super_mario_bros
 
 ######################################################################
 # RL Definitions
-# """""""""
+# """"""""""""""""""
 #
 # **Environment** The world that an agent interacts with and learns from.
 #
@@ -86,7 +86,7 @@ import gym_super_mario_bros
 # """"""""""""""""
 #
 # Initialize Environment
-# --------------
+# ------------------------
 #
 # In Mario, the environment consists of tubes, mushrooms and other
 # components.
@@ -114,7 +114,7 @@ print(f'{next_state.shape},\n {reward},\n {done},\n {info}')
 
 ######################################################################
 # Preprocess Environment
-# --------------
+# ------------------------
 #
 # Environment data is returned to the agent in ``next_state``. As you saw
 # above, each state is represented by a ``[3, 240, 256]`` size array.
@@ -144,6 +144,25 @@ print(f'{next_state.shape},\n {reward},\n {done},\n {info}')
 # jumping based on the direction of his movement in the previous several
 # frames.
 #
+
+class SkipFrame(gym.Wrapper):
+    def __init__(self, env, skip):
+        """Return only every `skip`-th frame"""
+        super().__init__(env)
+        self._skip = skip
+
+    def step(self, action):
+        """Repeat action, and sum reward"""
+        total_reward = 0.0
+        done = False
+        for i in range(self._skip):
+            # Accumulate reward and repeat the same action
+            obs, reward, done, info = self.env.step(action)
+            total_reward += reward
+            if done:
+                break
+        return obs, total_reward, done, info
+
 
 class GrayScaleObservation(gym.ObservationWrapper):
     def __init__(self, env):
@@ -183,25 +202,6 @@ class ResizeObservation(gym.ObservationWrapper):
         ])
         observation = transforms(observation).squeeze(0)
         return observation
-
-
-class SkipFrame(gym.Wrapper):
-    def __init__(self, env, skip):
-        """Return only every `skip`-th frame"""
-        super().__init__(env)
-        self._skip = skip
-
-    def step(self, action):
-        """Repeat action, and sum reward"""
-        total_reward = 0.0
-        done = False
-        for i in range(self._skip):
-            # Accumulate reward and repeat the same action
-            obs, reward, done, info = self.env.step(action)
-            total_reward += reward
-            if done:
-                break
-        return obs, total_reward, done, info
 
 
 # Apply Wrappers to environment
@@ -333,7 +333,7 @@ class Mario:
 
 ######################################################################
 # Cache and Recall
-# --------------
+# ----------------------
 #
 # These two functions serve as Mario’s “memory” process.
 #
@@ -399,7 +399,7 @@ class Mario(Mario): # subclassing for continuity
 # later).
 #
 # Neural Network
-# ~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~
 
 class MarioNet(nn.Module):
   '''mini cnn structure
@@ -442,7 +442,7 @@ class MarioNet(nn.Module):
 
 ######################################################################
 # TD Estimate & TD Target
-# ~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Two values are involved in learning:
 #
@@ -496,7 +496,7 @@ class Mario(Mario):
 
 ######################################################################
 # Updating the model
-# ~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~
 #
 # As Mario samples inputs from his replay buffer, we compute :math:`TD_t`
 # and :math:`TD_e` and backpropagate this loss down :math:`Q_{online}` to
@@ -538,7 +538,7 @@ class Mario(Mario):
 
 ######################################################################
 # Save checkpoint
-# ~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~
 #
 
 class Mario(Mario):
@@ -556,7 +556,7 @@ class Mario(Mario):
 
 ######################################################################
 # Putting it all together
-# ~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
 class Mario(Mario):
@@ -712,7 +712,7 @@ class MetricLogger():
 
 ######################################################################
 # Let’s play!
-# """""""""
+# """""""""""""""
 #
 
 use_cuda = torch.cuda.is_available()
