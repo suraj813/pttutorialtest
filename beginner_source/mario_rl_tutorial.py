@@ -46,7 +46,7 @@ import random, datetime, os, copy
 # Gym is an OpenAI toolkit for RL
 import gym
 from gym.spaces import Box
-from gym.wrappers import FrameStack  # , GrayScaleObservation
+from gym.wrappers import FrameStack
 
 # NES Emulator for OpenAI Gym
 from nes_py.wrappers import JoypadSpace
@@ -313,11 +313,10 @@ class Mario:
 
         # EXPLOIT
         else:
-            state = (
-                torch.FloatTensor(state).cuda()
-                if self.use_cuda
-                else torch.FloatTensor(state)
-            )
+            if self.use_cuda:
+                state = torch.tensor(state).cuda()
+            else:
+                state = torch.tensor(state)
             state = state.unsqueeze(0)
             action_values = self.net(state, model="online")
             action_idx = torch.argmax(action_values, axis=1).item()
@@ -364,35 +363,19 @@ class Mario(Mario):  # subclassing for continuity
         reward (float),
         done(bool))
         """
-        try:
-            state = (
-                torch.FloatTensor(state).cuda()
-                if self.use_cuda
-                else torch.FloatTensor(state)
-            )
-        except ValueError:
-            print(state, type(state))
 
-        next_state = (
-            torch.FloatTensor(next_state).cuda()
-            if self.use_cuda
-            else torch.FloatTensor(next_state)
-        )
-        action = (
-            torch.LongTensor([action]).cuda()
-            if self.use_cuda
-            else torch.LongTensor([action])
-        )
-        reward = (
-            torch.DoubleTensor([reward]).cuda()
-            if self.use_cuda
-            else torch.DoubleTensor([reward])
-        )
-        done = (
-            torch.BoolTensor([done]).cuda()
-            if self.use_cuda
-            else torch.BoolTensor([done])
-        )
+        if self.use_cuda:
+            state = torch.tensor(state).cuda()
+            next_state = torch.tensor(next_state).cuda()
+            action = torch.tensor([action]).cuda()
+            reward = torch.tensor([reward]).cuda()
+            done = torch.tensor([done]).cuda()
+        else:
+            state = torch.tensor(state)
+            next_state = torch.tensor(next_state)
+            action = torch.tensor([action])
+            reward = torch.tensor([reward])
+            done = torch.tensor([done])
 
         self.memory.append((state, next_state, action, reward, done,))
 
@@ -594,7 +577,7 @@ class Mario(Mario):
 class Mario(Mario):
     def __init__(self, state_dim, action_dim, save_dir):
         super().__init__(state_dim, action_dim, save_dir)
-        self.burnin = 1e2  # min. experiences before training
+        self.burnin = 1e4  # min. experiences before training
         self.learn_every = 3  # no. of experiences between updates to Q_online
         self.sync_every = 1e4  # no. of experiences between Q_target & Q_online sync
 
