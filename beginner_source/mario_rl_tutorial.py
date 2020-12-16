@@ -362,7 +362,7 @@ class Mario(Mario):  # subclassing for continuity
         reward (float),
         done(bool))
         """
-
+        print(f"state: {state}, {state.__array__().shape}")
         if self.use_cuda:
             state = torch.tensor(state).cuda()
             next_state = torch.tensor(next_state).cuda()
@@ -370,8 +370,15 @@ class Mario(Mario):  # subclassing for continuity
             reward = torch.tensor([reward]).cuda()
             done = torch.tensor([done]).cuda()
         else:
-            state = torch.tensor(state)
-            next_state = torch.tensor(next_state)
+            try:
+                state = torch.tensor(state)
+            except:
+                print(f"state: {state}, {state.__array__().shape}")
+
+            try:
+                next_state = torch.tensor(next_state)
+            except:
+                print(f"state: {next_state}, {next_state.__array__().shape}")
             action = torch.tensor([action])
             reward = torch.tensor([reward])
             done = torch.tensor([done])
