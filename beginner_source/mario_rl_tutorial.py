@@ -315,7 +315,7 @@ class Mario:
             if self.use_cuda:
                 state = torch.tensor(state).cuda()
             else:
-                state = torch.tensor(state)
+                state = torch.tensor(state.__array__())
             state = state.unsqueeze(0)
             action_values = self.net(state, model="online")
             action_idx = torch.argmax(action_values, axis=1).item()
@@ -362,7 +362,7 @@ class Mario(Mario):  # subclassing for continuity
         reward (float),
         done(bool))
         """
-        print(f"state: {state}, {state.__array__().shape}")
+
         if self.use_cuda:
             state = torch.tensor(state).cuda()
             next_state = torch.tensor(next_state).cuda()
@@ -371,14 +371,17 @@ class Mario(Mario):  # subclassing for continuity
             done = torch.tensor([done]).cuda()
         else:
             try:
-                state = torch.tensor(state)
+                state = torch.tensor(state.__array__())
             except:
                 print(f"state: {state}, {state.__array__().shape}")
+                sys.exit()
 
             try:
-                next_state = torch.tensor(next_state)
+                next_state = torch.tensor(next_state.__array__())
             except:
-                print(f"state: {next_state}, {next_state.__array__().shape}")
+                print(f"nstate: {next_state}, {next_state.__array__().shape}")
+                sys.exit()
+
             action = torch.tensor([action])
             reward = torch.tensor([reward])
             done = torch.tensor([done])
