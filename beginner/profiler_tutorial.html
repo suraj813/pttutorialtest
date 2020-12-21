@@ -1,0 +1,1283 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Profiling your PyTorch Module &mdash; PyTorch Tutorials 1.7.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+                  <span class="dropdown-title">PyTorch</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+                  <span class="dropdown-title">torchaudio</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+                  <span class="dropdown-title">torchtext</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/torchvision/">
+                  <span class="dropdown-title">torchvision</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/elastic/">
+                  <span class="dropdown-title">TorchElastic</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+                  <span class="dropdown-title">TorchServe</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+                  <span class="dropdown-title">PyTorch on XLA Devices</span>
+                  <p></p>
+                </a>
+            </div>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-arrow">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/features">
+                  <span class="dropdown-title">About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+                  <span class="dropdown-title">Community</span>
+                  <p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/resources">
+                  <span class="dropdown-title">Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+                  <span class="dropdown-title">Forums</span>
+                  <p>A place to discuss PyTorch code, issues, install, research</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/hub">
+                  <span class="dropdown-title">Models (Beta)</span>
+                  <p>Discover, publish, and reuse pre-trained models</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+                <div class="version">
+                  1.7.1
+                </div>
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Tutorials" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Profiling your PyTorch Module</a><ul>
+<li><a class="reference internal" href="#performance-debugging-using-profiler">Performance debugging using Profiler</a><ul>
+<li><a class="reference internal" href="#profile-the-forward-pass">Profile the forward pass</a></li>
+<li><a class="reference internal" href="#print-profiler-results">Print profiler results</a></li>
+<li><a class="reference internal" href="#improve-memory-performance">Improve memory performance</a></li>
+<li><a class="reference internal" href="#improve-time-performance">Improve time performance</a></li>
+<li><a class="reference internal" href="#caveat">Caveat</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#further-reading">Further Reading</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Profiling your PyTorch Module</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/beginner/profiler_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+
+          <div class="pytorch-call-to-action-links">
+            <div id="tutorial-type">beginner/profiler_tutorial</div>
+
+            <div id="google-colab-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+              <div class="call-to-action-desktop-view">Run in Google Colab</div>
+              <div class="call-to-action-mobile-view">Colab</div>
+            </div>
+            <div id="download-notebook-link">
+              <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+              <div class="call-to-action-desktop-view">Download Notebook</div>
+              <div class="call-to-action-mobile-view">Notebook</div>
+            </div>
+            <div id="github-view-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+              <div class="call-to-action-desktop-view">View on GitHub</div>
+              <div class="call-to-action-mobile-view">GitHub</div>
+            </div>
+          </div>
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-beginner-profiler-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="profiling-your-pytorch-module">
+<span id="sphx-glr-beginner-profiler-tutorial-py"></span><h1>Profiling your PyTorch Module<a class="headerlink" href="#profiling-your-pytorch-module" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author:</strong> <a class="reference external" href="https://github.com/suraj813">Suraj Subramanian</a></p>
+<p>PyTorch includes a profiler API that is useful to identify the time and
+memory costs of various PyTorch operations in your code. Profiler can be
+easily integrated in your code, and the results can be printed as a table
+or retured in a JSON trace file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Profiler supports multithreaded models. Profiler runs in the
+same thread as the operation but it will also profile child operators
+that might run in another thread. Concurrently-running profilers will be
+scoped to their own thread to prevent mixing of results.</p>
+</div>
+<p>Head on over to <a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/profiler.html">this
+recipe</a>
+for a quicker walkthrough of using the Profiler API in your code.</p>
+<hr class="docutils" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
+</pre></div>
+</div>
+<div class="section" id="performance-debugging-using-profiler">
+<h2>Performance debugging using Profiler<a class="headerlink" href="#performance-debugging-using-profiler" title="Permalink to this headline">¶</a></h2>
+<p>Profiler can be useful to identify performance bottlenecks in your
+models. In this example, we build a custom module that performs two
+sub-tasks:</p>
+<ul class="simple">
+<li><p>a linear transformation on the input, and</p></li>
+<li><p>use the transformation result to get indices on a mask tensor.</p></li>
+</ul>
+<p>We wrap the code for each sub-task in separate labelled context managers using
+<code class="docutils literal notranslate"><span class="pre">profiler.record_function(&quot;label&quot;)</span></code>. In the profiler output, the
+aggregate performance metrics of all operations in the sub-task will
+show up under its corresponding label.</p>
+<p>Note that using Profiler incurs some overhead, and is best used only for investigating
+code. Remember to remove it if you are benchmarking runtimes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;LINEAR PASS&quot;</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;MASK INDICES&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">hi_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span>
+            <span class="n">hi_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">hi_idx</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">hi_idx</span>
+</pre></div>
+</div>
+<div class="section" id="profile-the-forward-pass">
+<h3>Profile the forward pass<a class="headerlink" href="#profile-the-forward-pass" title="Permalink to this headline">¶</a></h3>
+<p>We initialize random input and mask tensors, and the model.</p>
+<p>Before we run the profiler, we warm-up CUDA to ensure accurate
+performance benchmarking. We wrap the forward pass of our module in the
+<code class="docutils literal notranslate"><span class="pre">profiler.profile</span></code> context manager. The <code class="docutils literal notranslate"><span class="pre">with_stack=True</span></code> parameter appends the
+file and line number of the operation in the trace.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">with_stack=True</span></code> incurs an additional overhead, and is better suited for investigating code.
+Remember to remove it if you are benchmarking performance.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+
+<span class="c1"># warm-up</span>
+<span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="print-profiler-results">
+<h3>Print profiler results<a class="headerlink" href="#print-profiler-results" title="Permalink to this headline">¶</a></h3>
+<p>Finally, we print the profiler results. <code class="docutils literal notranslate"><span class="pre">profiler.key_averages</span></code>
+aggregates the results by operator name, and optionally by input
+shapes and/or stack trace events.
+Grouping by input shapes is useful to identify which tensor shapes
+are utilized by the model.</p>
+<p>Here, we use <code class="docutils literal notranslate"><span class="pre">group_by_stack_n=5</span></code> which aggregates runtimes by the
+operation and its traceback (truncated to the most recent 5 events), and
+display the events in the order they are registered. The table can also
+be sorted by passing a <code class="docutils literal notranslate"><span class="pre">sort_by</span></code> argument (refer to the
+<a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#profiler">docs</a> for
+valid sorting keys).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When running profiler in a notebook, you might see entries like <code class="docutils literal notranslate"><span class="pre">&lt;ipython-input-18-193a910735e8&gt;(13):</span> <span class="pre">forward</span></code>
+instead of filenames in the stacktrace. These correspond to <code class="docutils literal notranslate"><span class="pre">&lt;notebook-cell&gt;(line</span> <span class="pre">number):</span> <span class="pre">calling-function</span></code>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_stack_n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s1">&#39;cpu_time_total&#39;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+                         Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg       CPU Mem  Self CPU Mem    # of Calls  Source Location
+-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+                 MASK INDICES        99.52%     461.212ms        99.73%     462.178ms     462.178ms          -4 b        -792 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  LINEAR PASS         0.03%     117.301us         0.19%     868.108us     868.108us       5.00 Kb        -276 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::addmm         0.06%     287.503us         0.11%     516.805us     516.805us       5.00 Kb       5.00 Kb             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                   aten::mean         0.02%      77.801us         0.09%     404.304us     404.304us           4 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                    aten::sum         0.03%     137.301us         0.07%     339.403us     169.702us         516 b           0 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                   aten::div_         0.02%      80.701us         0.07%     333.003us     166.501us           0 b          -4 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::zeros         0.02%     106.101us         0.05%     243.303us     243.303us           4 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                      aten::t         0.02%     104.101us         0.04%     190.402us     190.402us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                  aten::zeros         0.01%      44.600us         0.03%     161.901us     161.901us           4 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::copy_         0.01%      65.901us         0.02%     106.501us     106.501us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                     aten::to         0.01%      38.801us         0.02%     104.701us     104.701us           4 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                   aten::item         0.01%      48.900us         0.02%     104.001us     104.001us           0 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::empty         0.02%      95.101us         0.02%      95.101us      95.101us           0 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::zero_         0.01%      43.700us         0.02%      87.501us      87.501us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+              aten::transpose         0.01%      46.300us         0.02%      86.301us      86.301us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+Self CPU time total: 463.451ms
+</pre></div>
+</div>
+</div>
+<div class="section" id="improve-memory-performance">
+<h3>Improve memory performance<a class="headerlink" href="#improve-memory-performance" title="Permalink to this headline">¶</a></h3>
+<p>Note that the most expensive operations - in terms of memory and time -
+are at <code class="docutils literal notranslate"><span class="pre">forward</span> <span class="pre">(10)</span></code> representing the operations within MASK INDICES. Let’s try to
+tackle the memory consumption first. We can see that the <code class="docutils literal notranslate"><span class="pre">.to()</span></code>
+operation at line 12 consumes 953.67 Mb. This operation copies <code class="docutils literal notranslate"><span class="pre">mask</span></code> to the CPU.
+<code class="docutils literal notranslate"><span class="pre">mask</span></code> is initialized with a <code class="docutils literal notranslate"><span class="pre">torch.double</span></code> datatype. Can we reduce the memory footprint by casting
+it to <code class="docutils literal notranslate"><span class="pre">torch.float</span></code>?</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+<span class="c1"># warm-up</span>
+<span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_stack_n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s1">&#39;cpu_time_total&#39;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+                         Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg       CPU Mem  Self CPU Mem    # of Calls  Source Location
+-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+                 MASK INDICES        93.47%        8.006s        94.41%        8.086s        8.086s          -4 b        -792 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  LINEAR PASS         0.67%      57.033ms         3.72%     318.783ms     318.783ms       5.00 Kb        -276 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::addmm         1.88%     160.854ms         2.50%     214.216ms     214.216ms       5.00 Kb       5.00 Kb             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                  aten::zeros         1.22%     104.110ms         1.80%     154.124ms     154.124ms           4 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::empty         0.70%      60.002ms         0.70%      60.002ms      60.002ms           0 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                  aten::zero_         0.45%      38.445ms         0.53%      45.089ms      45.089ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                 aten::expand         0.50%      43.083ms         0.52%      44.266ms      44.266ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                      aten::t         0.41%      34.874ms         0.50%      42.685ms      42.685ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                   aten::mean         0.05%       4.242ms         0.12%      10.175ms      10.175ms           4 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                   aten::div_         0.03%       2.463ms         0.11%       9.315ms       4.658ms           0 b          -4 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                    aten::sum         0.04%       3.792ms         0.10%       8.289ms       4.144ms         516 b           0 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+              aten::transpose         0.04%       3.274ms         0.09%       7.811ms       7.811ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                  aten::copy_         0.07%       5.897ms         0.08%       7.150ms       7.150ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+                  aten::fill_         0.08%       6.644ms         0.08%       6.644ms       6.644ms           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+             aten::as_strided         0.07%       5.720ms         0.07%       5.720ms       2.860ms           0 b           0 b             2  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                               /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                               /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+-----------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+Self CPU time total: 8.565s
+</pre></div>
+</div>
+<p>You can see the memory footprint for this operation has halved.</p>
+</div>
+<div class="section" id="improve-time-performance">
+<h3>Improve time performance<a class="headerlink" href="#improve-time-performance" title="Permalink to this headline">¶</a></h3>
+<p>While the time consumed has reduced a bit, it’s still too high.
+Turns out copying a matrix from CUDA to CPU is pretty expensive!
+The <code class="docutils literal notranslate"><span class="pre">aten::copy_</span></code> operator in <code class="docutils literal notranslate"><span class="pre">forward</span> <span class="pre">(12)</span></code> copies <code class="docutils literal notranslate"><span class="pre">mask</span></code> to CPU
+so that it can use the NumPy <code class="docutils literal notranslate"><span class="pre">argwhere</span></code> function. <code class="docutils literal notranslate"><span class="pre">aten::copy_</span></code> at <code class="docutils literal notranslate"><span class="pre">forward(13)</span></code>
+copies the array back to CUDA as a tensor. We could eliminate both of these if we use a
+<code class="docutils literal notranslate"><span class="pre">torch</span></code> function <code class="docutils literal notranslate"><span class="pre">nonzero()</span></code> here instead.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;LINEAR PASS&quot;</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;INDEX SCORE&quot;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">hi_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">hi_idx</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+<span class="c1"># warm-up</span>
+<span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_stack_n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>-----------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg       CPU Mem  Self CPU Mem    # of Calls  Source Location
+-----------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+            aten::zeros         0.01%     122.301us         0.02%     266.402us     266.402us           4 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.00%      54.800us         0.00%      54.800us      54.800us           4 b           4 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::zero_         0.00%      41.800us         0.01%      89.301us      89.301us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::fill_         0.00%      47.501us         0.00%      47.501us      47.501us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            LINEAR PASS         0.01%     159.900us         0.10%       1.456ms       1.456ms       5.00 Kb        -276 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.00%      38.801us         0.00%      38.801us      38.801us         272 b         272 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+                aten::t         0.03%     460.204us         0.04%     547.705us     547.705us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+        aten::transpose         0.00%      46.200us         0.01%      87.501us      87.501us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+       aten::as_strided         0.01%      79.102us         0.01%      79.102us      39.551us           0 b           0 b             2  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+            aten::addmm         0.01%     212.102us         0.05%     709.806us     709.806us       5.00 Kb       5.00 Kb             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+            aten::empty         0.00%      39.200us         0.00%      39.200us      39.200us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+           aten::expand         0.00%      40.800us         0.01%      78.601us      78.601us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+            aten::copy_         0.00%      69.700us         0.03%     379.903us     379.903us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+           aten::stride         0.02%     310.203us         0.02%     310.203us     310.203us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/nn/functional.py(1690
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/linear.py(
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+
+            aten::zeros         0.00%      52.801us         0.01%     161.402us     161.402us           4 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.00%      39.000us         0.00%      39.000us      39.000us           4 b           4 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::zero_         0.00%      34.300us         0.00%      69.601us      69.601us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::fill_         0.00%      35.301us         0.00%      35.301us      35.301us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            INDEX SCORE         0.05%     717.206us        99.87%        1.482s        1.482s       2.79 Gb    -119.21 Mb             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.00%      33.200us         0.00%      33.200us      33.200us         272 b         272 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/autograd/profiler.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+              aten::sum         0.05%     701.206us         0.06%     925.908us     462.954us         516 b           0 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.01%      88.500us         0.01%      88.500us      44.250us         516 b         516 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+       aten::as_strided         0.00%      65.501us         0.00%      65.501us      32.750us           0 b           0 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::fill_         0.00%      70.701us         0.00%      70.701us      35.351us           0 b           0 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+             aten::mean         0.00%      72.701us         0.07%     991.508us     991.508us           4 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+             aten::div_         0.01%      80.000us         0.02%     361.702us     180.851us           0 b          -4 b             2  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+               aten::to         0.00%      35.601us         0.01%     119.001us     119.001us           4 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+    aten::empty_strided         0.00%      31.500us         0.00%      31.500us      31.500us           4 b           4 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::copy_         0.00%      51.900us         0.00%      51.900us      51.900us           0 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+               aten::gt         3.30%      49.029ms         6.60%      97.911ms      48.956ms     238.42 Mb           0 b             2  /home/runner/.local/lib/python3.6/site-packages/torch/tensor.py(27): wrappe
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+            aten::empty         0.00%      34.400us         0.00%      34.400us      34.400us           0 b           0 b             1  /home/runner/.local/lib/python3.6/site-packages/torch/tensor.py(27): wrappe
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+          aten::resize_         0.02%     313.603us         0.02%     313.603us     313.603us     119.21 Mb     119.21 Mb             1  /home/runner/.local/lib/python3.6/site-packages/torch/tensor.py(27): wrappe
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+    aten::nonzero_numpy         0.01%     100.000us        96.41%        1.431s        1.431s       2.79 Gb           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+          aten::nonzero        96.36%        1.430s        96.36%        1.430s        1.430s       2.79 Gb       2.79 Gb             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+           aten::unbind         0.03%     464.104us         0.05%     672.406us     672.406us           0 b           0 b             1  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+           aten::select         0.01%     107.300us         0.01%     208.302us      69.434us           0 b           0 b             3  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+       aten::as_strided         0.01%     101.002us         0.01%     101.002us      33.667us           0 b           0 b             3  /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/torch/nn/modules/module.py(
+                                                                                                                                         /home/runner/work/pttutorialtest/pttutorialtest/beginner_source/profiler_tu
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+                                                                                                                                         /home/runner/.local/lib/python3.6/site-packages/sphinx_gallery/gen_rst.py(3
+
+-----------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ---------------------------------------------------------------------------
+Self CPU time total: 1.484s
+</pre></div>
+</div>
+</div>
+<div class="section" id="caveat">
+<h3>Caveat<a class="headerlink" href="#caveat" title="Permalink to this headline">¶</a></h3>
+<p>You might notice introducing <code class="docutils literal notranslate"><span class="pre">torch.nonzero</span></code> in our module has shown a
+new memory footprint of 2.59 Gb that wasn’t in the stacktrace when we
+used <code class="docutils literal notranslate"><span class="pre">np.argwhere</span></code>. This is because Profiler currently tracks only PyTorch tensors
+memory consumption and not NumPy arrays; it is likely that <code class="docutils literal notranslate"><span class="pre">np.argwhere</span></code>
+occupied a similar amount of memory on the CPU but that will not be reported
+in the trace here.</p>
+</div>
+</div>
+<div class="section" id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Permalink to this headline">¶</a></h2>
+<p>We have seen how Profiler can be used to identify time and memory bottlenecks in PyTorch models.
+Read more about Profiler here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/profiler.html">Profiler Usage Recipe</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html">Profiling RPC-Based Workloads</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler">Profiler API Docs</a></p></li>
+</ul>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  27.517 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-profiler-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/43d352f8ef5b4e06f1b1f3e1f2059781/profiler_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">profiler_tutorial.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/3a7b8750cadeccb2f3a85d8a6c7cc351/profiler_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">profiler_tutorial.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  
+
+    <hr class="helpful-hr hr-top">
+      <div class="helpful-container">
+        <div class="helpful-question">Was this helpful?</div>
+        <div class="helpful-question yes-link" data-behavior="was-this-helpful-event" data-response="yes">Yes</div>
+        <div class="helpful-question no-link" data-behavior="was-this-helpful-event" data-response="no">No</div>
+        <div class="was-helpful-thank-you">Thank you</div>
+      </div>
+    <hr class="helpful-hr hr-bottom"/>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, PyTorch.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Profiling your PyTorch Module</a><ul>
+<li><a class="reference internal" href="#performance-debugging-using-profiler">Performance debugging using Profiler</a><ul>
+<li><a class="reference internal" href="#profile-the-forward-pass">Profile the forward pass</a></li>
+<li><a class="reference internal" href="#print-profiler-results">Print profiler results</a></li>
+<li><a class="reference internal" href="#improve-memory-performance">Improve memory performance</a></li>
+<li><a class="reference internal" href="#improve-time-performance">Improve time performance</a></li>
+<li><a class="reference internal" href="#caveat">Caveat</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#further-reading">Further Reading</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-90545585-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://pytorch.org/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+            <li><a href="https://pytorch.org/get-started">Get Started</a></li>
+            <li><a href="https://pytorch.org/features">Features</a></li>
+            <li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+            <li><a href="https://pytorch.org/blog/">Blog</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+            <li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+            <li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Stay Connected</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="https://www.facebook.com/pytorch" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/pytorch" target="_blank" class="twitter"></a>
+            <a href="https://www.youtube.com/pytorch" target="_blank" class="youtube"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/hub">PyTorch Hub</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li class="resources-mobile-menu-title">
+            Docs
+          </li>
+
+          <ul class="resources-mobile-menu-items">
+            <li>
+              <a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/docs/stable/torchvision/">torchvision</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/elastic/">TorchElastic</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/serve/">TorchServe</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+            </li>
+          </ul>
+
+          <li class="resources-mobile-menu-title">
+            Resources
+          </li>
+
+          <ul class="resources-mobile-menu-items">
+            <li>
+              <a href="https://pytorch.org/resources">Developer Resources</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/features">About</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/hub">Models (Beta)</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/#community-module">Community</a>
+            </li>
+
+            <li>
+              <a href="https://discuss.pytorch.org/">Forums</a>
+            </li>
+          </ul>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
