@@ -61,7 +61,7 @@ class MyModule(nn.Module):
         with profiler.record_function("MASK INDICES"):
             threshold = out.sum(axis=1).mean().item()
             hi_idx = np.argwhere(mask.cpu().numpy() > threshold)
-            hi_idx = torch.from_numpy(hi_idx).cuda()
+            hi_idx = torch.from_numpy(hi_idx)
 
         return out, hi_idx
 
@@ -82,9 +82,9 @@ class MyModule(nn.Module):
 #     Remember to remove it if you are benchmarking performance.
 #
 
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.double).cuda()
+model = MyModule(500, 10)
+input = torch.rand(128, 500)
+mask = torch.rand((500, 500, 500), dtype=torch.double)
 
 # warm-up
 model(input, mask)
@@ -128,9 +128,9 @@ print(prof.key_averages(group_by_stack_n=5).table(sort_by='cpu_time_total', row_
 # it to ``torch.float``?
 #
 
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
+model = MyModule(500, 10)
+input = torch.rand(128, 500)
+mask = torch.rand((500, 500, 500), dtype=torch.float)
 
 # warm-up
 model(input, mask)
@@ -170,9 +170,9 @@ class MyModule(nn.Module):
         return out, hi_idx
 
 
-model = MyModule(500, 10).cuda()
-input = torch.rand(128, 500).cuda()
-mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
+model = MyModule(500, 10)
+input = torch.rand(128, 500)
+mask = torch.rand((500, 500, 500), dtype=torch.float)
 
 # warm-up
 model(input, mask)
